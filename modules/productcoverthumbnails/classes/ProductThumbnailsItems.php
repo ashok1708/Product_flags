@@ -19,6 +19,7 @@ class ProductThumbnailsItems extends ObjectModel
             'selectedthumbnailimage' => array('type' => self::TYPE_STRING),
             'type' => array('type' => self::TYPE_STRING),
             'img_status' => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'position' => array('type' => self::TYPE_STRING),
         ),
     );
 

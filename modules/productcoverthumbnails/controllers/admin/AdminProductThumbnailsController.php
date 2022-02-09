@@ -48,6 +48,26 @@ class AdminProductThumbnailsController extends ModuleAdminController
 
     public function renderForm()
     {
+        $options = array(
+            array(
+                'id_option' => 'top-left',
+                'name' => 'Top Left'
+            ),
+            array(
+                'id_option' => 'top-right',
+                'name' => 'Top Right'
+            ),
+            array(
+                'id_option' => 'bottom-left',
+                'name' => 'Bottom Left'
+            ),
+            array(
+                'id_option' => 'bottom-right',
+                'name' => 'Bottom Right'
+            ),
+        );
+
+
         $this->fields_form = array(
             'legend' => array(
                 'title' => $this->trans('Product Thumbnails', array(), 'Admin.Notifications.Info')
@@ -85,6 +105,19 @@ class AdminProductThumbnailsController extends ModuleAdminController
                             'value' => 0,
                             'label' => $this->trans('Disabled')
                         )
+                    )
+                ),
+
+                array(
+                    'type' => 'select',
+                    'label' => $this->l('Flag Position'),
+                    'desc' => $this->l('Choose a position of flag'),
+                    'name' => 'position',
+                    'required' => true,
+                    'options' => array(
+                        'query' => $options,
+                        'id' => 'id_option',
+                        'name' => 'name'
                     )
                 ),
             ),

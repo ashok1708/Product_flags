@@ -118,7 +118,7 @@ class Productcoverthumbnails extends Module
         $id_product =Tools::getValue('id_product');
 
         $query = new DbQuery();
-        $query->select(_DB_PREFIX_.'product_cover_thumbnails.thumbnails_id, '._DB_PREFIX_.'product_cover_thumbnails.thumbnails_name, '._DB_PREFIX_.'product_cover_thumbnails.type, '._DB_PREFIX_.'product_cover_thumbnails.img_status')
+        $query->select(_DB_PREFIX_.'product_cover_thumbnails.thumbnails_id, '._DB_PREFIX_.'product_cover_thumbnails.thumbnails_name, '._DB_PREFIX_.'product_cover_thumbnails.type, '._DB_PREFIX_.'product_cover_thumbnails.img_status, '._DB_PREFIX_.'product_cover_thumbnails.position')
             ->from('product_cover_thumbnails')
             ->leftJoin('product_thumbnails_item','',_DB_PREFIX_.'product_cover_thumbnails.thumbnails_id='._DB_PREFIX_.'product_thumbnails_item.thumbnails_id')
             ->where(_DB_PREFIX_.'product_thumbnails_item.product_id='.$id_product);

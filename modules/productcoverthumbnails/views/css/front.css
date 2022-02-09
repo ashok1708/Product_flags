@@ -1,6 +1,25 @@
 .product-flag-extra{
-    top:38px
+    top:38px;
+    height: 410px;
 }
 .extra-flag-img {
     width: 30px;
+}
+
+.top-left {
+
+}
+
+.top-right {
+    position: absolute;
+    right: 0;
+}
+.bottom-left {
+    position: absolute;
+    bottom: 0;
+}
+.bottom-right {
+    position: absolute;
+    bottom: 0;
+    right: 0;
 }
