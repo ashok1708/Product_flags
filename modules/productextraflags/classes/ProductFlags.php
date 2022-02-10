@@ -10,6 +10,8 @@ class ProductFlags extends ObjectModel
     public $position;
     public $text_color;
     public $bg_color;
+    public $time_from;
+    public $time_to;
 
 
     /**
@@ -27,6 +29,8 @@ class ProductFlags extends ObjectModel
             'position' => array('type' => self::TYPE_STRING),
             'text_color' => array('type' => self::TYPE_STRING),
             'bg_color' => array('type' => self::TYPE_STRING),
+            'time_from' => array('type' => self::TYPE_STRING),
+            'time_to' => array('type' => self::TYPE_STRING)
         ),
     );
 

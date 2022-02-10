@@ -45,7 +45,7 @@ class Productextraflags extends Module
     }
 
     /*
-        Create custom tab for add thumbnails items.
+        Create custom tab for add flags items.
     */
     public function installTab($parent_class, $class_name, $name)  {
         $tab = new Tab();
@@ -82,18 +82,11 @@ class Productextraflags extends Module
         $id_product = $params['id_product'];
 
         /*
-         Fetching data of all thumbnails.
+         Fetching data of all flags.
          */
         $query = new DbQuery();
         $query->select('*')->from('product_extra_flags');
         $flags_data= Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($query);
-
-//        /*
-//          Fetching data of already selected thumbnails.
-//         */
-//        $query_name=new DbQuery();
-//        $query_name->select('thumbnails_name')->from('product_thumbnails_item')->where('product_id='.$id_product);
-//        $thumbnails_name=Db::getInstance()->executeS($query_name);
 
         $this->context->smarty->assign(
             [
@@ -130,20 +123,22 @@ class Productextraflags extends Module
         exit();
     }
 
+    public function getContent()
+    {
+        $this->context->controller->addJqueryUI('ui.datepicker');
+    }
+
     public function hookDisplayAfterProductThumbs($params)
     {
         $id_product =Tools::getValue('id_product');
 
         $query = new DbQuery();
-        $query->select(_DB_PREFIX_.'product_extra_flags.id_flag, '._DB_PREFIX_.'product_extra_flags.name_flag, '._DB_PREFIX_.'product_extra_flags.type, '._DB_PREFIX_.'product_extra_flags.img_status, '._DB_PREFIX_.'product_extra_flags.position, '._DB_PREFIX_.'product_extra_flags.text_color, '._DB_PREFIX_.'product_extra_flags.bg_color')
+        $query->select('*')
             ->from('product_extra_flags')
             ->leftJoin('product_flags_item','',_DB_PREFIX_.'product_extra_flags.id_flag='._DB_PREFIX_.'product_flags_item.id_flag')
             ->where(_DB_PREFIX_.'product_flags_item.id_product='.$id_product);
 
         $flags_data= Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($query);
-
-        print_r($query->build());
-        dump($flags_data);
 
         $this->context->smarty->assign(
             [

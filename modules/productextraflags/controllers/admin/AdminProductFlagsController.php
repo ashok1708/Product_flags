@@ -108,6 +108,17 @@ class AdminProductFlagsController extends ModuleAdminController
                         )
                     )
                 ),
+                array(
+                    'type'=>'datetime',
+                    'label'=>$this->trans('From',[],'Admin.Global'),
+                    'name'=>'time_from',
+                ),
+
+                array(
+                    'type'=>'datetime',
+                    'label'=>$this->trans('To',[],'Admin.Global'),
+                    'name'=>'time_to',
+                ),
 
                 array(
                     'type' => 'select',
@@ -124,7 +135,8 @@ class AdminProductFlagsController extends ModuleAdminController
                 array(
                     'type' => 'color',
                     'label' => $this->l(' Text Color'),
-                    'name' => 'text_color'
+                    'name' => 'text_color',
+                    'value'=>'#000',
                 ),
                 array(
                     'type' => 'color',
