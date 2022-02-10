@@ -1,9 +1,9 @@
 <?php
 
-class ProductThumbnailsItems extends ObjectModel
+class ProductFlags extends ObjectModel
 {
 
-    public $thumbnails_name;
+    public $name_flag;
     public $selectedthumbnailimage;
     public $type;
     public $img_status;
@@ -16,11 +16,11 @@ class ProductThumbnailsItems extends ObjectModel
      * @see ObjectModel::$definition
      */
     public static $definition = array(
-        'table' => 'product_cover_thumbnails',
-        'primary' => 'thumbnails_id',
+        'table' => 'product_extra_flags',
+        'primary' => 'id_flag',
         'multilang' => false,
         'fields' => array(
-            'thumbnails_name' => array('type' => self::TYPE_STRING,  'validate' => 'isGenericName', 'required' => true),
+            'name_flag' => array('type' => self::TYPE_STRING,  'validate' => 'isGenericName', 'required' => true),
             'selectedthumbnailimage' => array('type' => self::TYPE_STRING),
             'type' => array('type' => self::TYPE_STRING),
             'img_status' => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
@@ -39,16 +39,16 @@ class ProductThumbnailsItems extends ObjectModel
         $this->image_dir = _PS_IMG_DIR_ .'thumbnail';
     }
 
-    public function updateIconFiletype($thumbnails_id, $type)
+    public function updateIconFiletype($id_flag, $type)
     {
-        if(!$thumbnails_id){
+        if(!$id_flag){
             return false;
         }
 
         return Db::getInstance(_PS_USE_SQL_SLAVE_)->update(
-            'product_cover_thumbnails',
+            'product_extra_flags',
             array('type' => $type),
-            'thumbnails_id = '.$thumbnails_id);
+            'id_flag = '.$id_flag);
     }
 
 }

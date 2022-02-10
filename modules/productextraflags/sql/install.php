@@ -26,9 +26,9 @@
 $sql = array();
 
 
-$sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'product_cover_thumbnails` (
-`thumbnails_id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `thumbnails_name` varchar(128) NOT NULL,
+$sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'product_extra_flags` (
+ `id_flag` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name_flag` varchar(128) NOT NULL,
   `selectedthumbnailimage` varchar(128) NOT NULL,
   `type` varchar(128) NOT NULL,
   `img_status` int(11) NOT NULL,
@@ -38,9 +38,9 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'product_cover_thumbnails` (
   
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8';
 
-$sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'product_thumbnails_item` (
-`product_id` int(11) NOT NULL ,
-  `thumbnails_id` int(11) NOT NULL
+$sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'product_flags_item` (
+  `id_product` int(11) NOT NULL ,
+  `id_flag` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8';
 
 foreach ($sql as $query) {
