@@ -5,6 +5,11 @@ class ProductThumbnailsItems extends ObjectModel
 
     public $thumbnails_name;
     public $selectedthumbnailimage;
+    public $type;
+    public $img_status;
+    public $position;
+    public $text_color;
+    public $bg_color;
 
 
     /**
@@ -20,6 +25,8 @@ class ProductThumbnailsItems extends ObjectModel
             'type' => array('type' => self::TYPE_STRING),
             'img_status' => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'position' => array('type' => self::TYPE_STRING),
+            'text_color' => array('type' => self::TYPE_STRING),
+            'bg_color' => array('type' => self::TYPE_STRING),
         ),
     );
 

@@ -120,6 +120,16 @@ class AdminProductThumbnailsController extends ModuleAdminController
                         'name' => 'name'
                     )
                 ),
+                array(
+                    'type' => 'color',
+                    'label' => $this->l(' Text Color'),
+                    'name' => 'text_color'
+                ),
+                array(
+                    'type' => 'color',
+                    'label' => $this->l(' Flag Background Color'),
+                    'name' => 'bg_color'
+                ),
             ),
             'submit' => array(
                 'name' => 'submit' . $this->className,

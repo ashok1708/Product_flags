@@ -31,7 +31,10 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'product_cover_thumbnails` (
   `thumbnails_name` varchar(128) NOT NULL,
   `selectedthumbnailimage` varchar(128) NOT NULL,
   `type` varchar(128) NOT NULL,
-  `img_status` int(11) NOT NULL
+  `img_status` int(11) NOT NULL,
+  `position` varchar(128) NOT NULL,
+  `text_color` varchar(128) NOT NULL,
+  `bg_color` varchar(128) NOT NULL
   
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8';
 
