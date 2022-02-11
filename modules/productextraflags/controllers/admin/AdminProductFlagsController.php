@@ -24,6 +24,7 @@ class AdminProductFlagsController extends ModuleAdminController
                 'title' => $this->trans('title'),
                 'align' => 'left',
             ),
+
         );
 
         $this->bulk_actions = array(
@@ -36,6 +37,7 @@ class AdminProductFlagsController extends ModuleAdminController
 
         $this->fieldImageSettings = array('name' => 'selectedthumbnailimage', 'dir' => 'thumbnail');
         $this->image_dir = 'thumbnail';
+
     }
 
 
@@ -49,6 +51,16 @@ class AdminProductFlagsController extends ModuleAdminController
 
     public function renderForm()
     {
+        $recursivecategories = Category::getCategories(Context::getContext()->language->id);
+        $processedCategories = [];
+        $this->recurseCategory($processedCategories, $recursivecategories, Category::getRootCategory()->id);
+        $groups = [];
+        foreach ($processedCategories as $cat) {
+            if ($cat['level_depth'] > 1) {
+                $groups[] = ['id_group' => $cat['id_category'], 'name' => $cat['name']];
+            }
+        }
+
         $options = array(
             array(
                 'id_option' => 'top-left',
@@ -121,9 +133,18 @@ class AdminProductFlagsController extends ModuleAdminController
                 ),
 
                 array(
+                    'type' => 'group',
+                    'label' => $this->l('Categories'),
+                    'name' => 'groupBox',
+                    'values' => $groups,
+                    'required' => true,
+                    'col' => '6',
+                ),
+
+                array(
                     'type' => 'select',
                     'label' => $this->l('Flag Position'),
-                    'desc' => $this->l('Choose a position of flag'),
+                    'desc' => $this->l('Choose a position of flag. With respect to product cover thumbnail.'),
                     'name' => 'position',
                     'required' => true,
                     'options' => array(
@@ -136,7 +157,6 @@ class AdminProductFlagsController extends ModuleAdminController
                     'type' => 'color',
                     'label' => $this->l(' Text Color'),
                     'name' => 'text_color',
-                    'value'=>'#000',
                 ),
                 array(
                     'type' => 'color',
@@ -145,12 +165,38 @@ class AdminProductFlagsController extends ModuleAdminController
                 ),
             ),
             'submit' => array(
-                'name' => 'submit' . $this->className,
+                'name' => 'submit' . $this->className ,
                 'title' => $this->trans('Save', array(), 'Admin.Notifications.Info'),
             ),
         );
 
         return parent::renderForm();
+
+    }
+
+    public function postProcess()
+    {
+        Db::getInstance()->delete('product_flags_category','id_flag='.$_POST['id_flag']);
+        $catList=$_POST['groupBox'];
+        $date=[];
+        foreach ($catList as $category)
+        {
+            $row = [
+                'id_flag'=>$_POST['id_flag'],
+                'id_category'=>$category
+            ];
+            $data[] = $row;
+        }
+
+        Db::getInstance()->insert('product_flags_category',$data);
+        return parent::postProcess();
+    }
+
+    protected function uploadCategory()
+    {
+        $cateList=Tools::getValue('groupBox');
+        dump($cateList);
+
     }
 
     protected function uploadImage($id, $name, $dir, $ext = false, $width = null, $height = null)
@@ -177,5 +223,19 @@ class AdminProductFlagsController extends ModuleAdminController
             }
         }
         return true;
+    }
+
+    public static function recurseCategory(&$actualCategories, $categories, $current, $id_category = null, $id_selected = 1)
+    {
+        if (!$id_category) {
+            $id_category = (int)Configuration::get('PS_ROOT_CATEGORY');
+        }
+
+        $actualCategories[] = ['id_category' => $id_category, 'level_depth' => $current['infos']['level_depth'], 'name' => str_repeat('&nbsp;', $current['infos']['level_depth'] * 5) . stripslashes($current['infos']['name'])];
+        if (isset($categories[$id_category])) {
+            foreach (array_keys($categories[$id_category]) as $key) {
+                self::recurseCategory($actualCategories, $categories, $categories[$id_category][$key], $key, $id_selected);
+            }
+        }
     }
 }

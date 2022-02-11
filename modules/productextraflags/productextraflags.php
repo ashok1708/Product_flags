@@ -45,7 +45,7 @@ class Productextraflags extends Module
     }
 
     /*
-        Create custom tab for add flags items.
+        Create custom tab for add flags.
     */
     public function installTab($parent_class, $class_name, $name)  {
         $tab = new Tab();
@@ -102,8 +102,8 @@ class Productextraflags extends Module
     public function hookActionProductUpdate($params)
     {
         $thmbn = Tools::getValue('flags_item');
-
-        Db::getInstance()->delete('product_extra_flags','id_product='.$params['id_product']);
+        dump($thmbn);
+        Db::getInstance()->delete('product_flags_item','id_product='.$params['id_product']);
 
         $data=[];
         foreach ($thmbn as $item)
@@ -131,17 +131,34 @@ class Productextraflags extends Module
     public function hookDisplayAfterProductThumbs($params)
     {
         $id_product =Tools::getValue('id_product');
+        $categories_id= Product::getProductCategoriesFull($id_product);
+        foreach ($categories_id as $id)
+        {
+            $query_cate = new DbQuery();
+            $query_cate->select('id_flag')
+                ->from('product_flags_category')
+                ->where('id_category=' . $id['id_category']);
+            $flagsId = Db::getInstance()->executeS($query_cate);
+            dump($id['id_category']);
+        }
 
-        $query = new DbQuery();
-        $query->select('*')
-            ->from('product_extra_flags')
-            ->leftJoin('product_flags_item','',_DB_PREFIX_.'product_extra_flags.id_flag='._DB_PREFIX_.'product_flags_item.id_flag')
-            ->where(_DB_PREFIX_.'product_flags_item.id_product='.$id_product);
+        foreach ($flagsId as $id)
+        {
+            $query = new DbQuery();
+            $query->select('*')
+                ->from('product_extra_flags')
+                ->leftJoin('product_flags_item','',_DB_PREFIX_.'product_extra_flags.id_flag='._DB_PREFIX_.'product_flags_item.id_flag')
+                ->where(_DB_PREFIX_.'product_flags_item.id_product='.$id_product.' AND '._DB_PREFIX_.'product_flags_item.id_flag='.$id['id_flag']);
 
-        $flags_data= Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($query);
+           if($row= Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow($query))
+           {
+               $flags_data[] =$row;
+           }
+        }
 
         $this->context->smarty->assign(
             [
+
                 'flags_data' => $flags_data
             ]
         );
@@ -153,4 +170,6 @@ class Productextraflags extends Module
     {
         $this->context->controller->addCSS(($this->_path) . 'views/css/front.css');
     }
+
+
 }
