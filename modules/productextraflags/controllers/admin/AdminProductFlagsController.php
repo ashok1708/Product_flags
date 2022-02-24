@@ -18,6 +18,10 @@ class AdminProductFlagsController extends ModuleAdminController
 
         parent::__construct();
 
+        if (!$this->module->active) {
+            Tools::redirectAdmin($this->context->link->getAdminLink('AdminHome'));
+        }
+
         $this->_select = ' a.type ';
         $this->fields_list = array(
             'id_flag' => array(
@@ -32,7 +36,6 @@ class AdminProductFlagsController extends ModuleAdminController
             ),
 
         );
-
         $this->bulk_actions = array(
             'delete' => array(
                 'text' => $this->l('Delete selected'),
@@ -43,10 +46,7 @@ class AdminProductFlagsController extends ModuleAdminController
 
         $this->fieldImageSettings = array('name' => 'selectedthumbnailimage', 'dir' => 'thumbnail');
         $this->image_dir = 'thumbnail';
-
     }
-
-
 
     public function renderList()
     {
@@ -66,7 +66,6 @@ class AdminProductFlagsController extends ModuleAdminController
                 $groups[] = ['id_group' => $cat['id_category'], 'name' => $cat['name']];
             }
         }
-
         $options = array(
             array(
                 'id_option' => 'top-left',
@@ -85,7 +84,6 @@ class AdminProductFlagsController extends ModuleAdminController
                 'name' => 'Bottom Right'
             ),
         );
-
         $options_type = array(
             array(
                 'id_option' => '0',
@@ -97,7 +95,6 @@ class AdminProductFlagsController extends ModuleAdminController
             ),
 
         );
-
 
         $this->fields_form = array(
             'legend' => array(
@@ -215,7 +212,6 @@ class AdminProductFlagsController extends ModuleAdminController
             $this->fields_value['groupBox_' . $cat['id_group']] =  Tools::getValue('groupBox_' . $cat['id_group'], in_array($cat['id_group'], $selected_cate_ids));
         }
 
-
         return parent::renderForm();
 
     }
@@ -270,12 +266,6 @@ class AdminProductFlagsController extends ModuleAdminController
         return parent::postProcess();
     }
 
-    protected function uploadCategory()
-    {
-        $cateList=Tools::getValue('groupBox');
-        dump($cateList);
-
-    }
 
     protected function uploadImage($id, $name, $dir, $ext = false, $width = null, $height = null)
     {

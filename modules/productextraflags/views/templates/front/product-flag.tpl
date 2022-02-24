@@ -1,6 +1,5 @@
 {block name='product_flags'}
-
-     <ul class="product-flags js-product-flags product-flag-extra" >
+    <ul class="product-flags js-product-flags product-flag-extra" >
         {foreach $flags_data as $flag}
             {assign var="dateFrom" value= $flag['time_from']}
             {assign var="dateTo" value= $flag['time_to']}
@@ -16,7 +15,7 @@
                 </li>
             {/if}
         {/foreach}
-     </ul>
+    </ul>
 {/block}
 
 

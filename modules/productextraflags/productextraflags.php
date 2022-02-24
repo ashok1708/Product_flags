@@ -37,10 +37,7 @@ class Productextraflags extends Module
         $this->need_instance = 1;
         $this->bootstrap = true;
 
-
         parent::__construct();
-        $this->registerHook('displayProductListReviews');
-        $this->registerHook('displayHeaderCategory');
         $this->displayName = $this->l('Product Extra Flags');
         $this->description = $this->l('Add Extra Flags On Your Product.');
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall this module?');
@@ -63,19 +60,21 @@ class Productextraflags extends Module
     public function install()
     {
         include(dirname(__FILE__) . '/sql/install.php');
+
         if (!file_exists(_PS_ROOT_DIR_ . '/img/thumbnail/')) {
             mkdir(_PS_ROOT_DIR_ . '/img/thumbnail/');
         }
+
         return parent::install()
             && $this->registerHook('header')
             && $this->registerHook('displayAdminProductsExtra')
             && $this->registerHook("displayAdminProductsMainStepLeftColumnBottom")
             && $this->registerHook('actionProductAdd')
+            && $this->registerHook('displayHeaderCategory')
             && $this->registerHook('displayProductListReviews')
             && $this->registerHook('actionProductUpdate')
             && $this->registerHook('displayAfterProductThumbs')
             && $this->registerHook('actionPresentProductListing')
-            && $this->registerHook('displayProductListBelowButton')
             && $this->installTab('AdminCatalog', 'AdminProductFlags', 'Product Flags');
     }
 
@@ -153,13 +152,10 @@ class Productextraflags extends Module
         $query_flag->select('id_flag')
                 ->from('product_flags_item')
                 ->where('id_product=' . $id_product);
-
         $flagsId= Db::getInstance()->executeS($query_flag);
-
 
         /*Get Flags from Category */
         $id_cate=$this->context->smarty->tpl_vars['category']->value->id_category;
-
         $query_cate = new DbQuery();
         $query_cate->select('id_flag')
             ->from('product_flags_category')
@@ -173,6 +169,7 @@ class Productextraflags extends Module
         {
             $ids[]=$id['id_flag'];
         }
+
         $ids= array_unique($ids);
 
         $flags_data=[];
@@ -186,7 +183,6 @@ class Productextraflags extends Module
                 ->leftJoin('product_flags_category','pfc','pef.id_flag = pfc.id_flag')
                 ->where('pef.id_flag='.$id)
                 ->where('pfc.id_category='.$id_cate);
-
 
             if($row= Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow($query))
             {
@@ -206,8 +202,6 @@ class Productextraflags extends Module
 
     public function hookDisplayProductListReviews($params)
     {
-
-
         $id_product=$params['product']['id_product'];
 
         /*Get Flags from Product */
@@ -217,7 +211,6 @@ class Productextraflags extends Module
             ->where('id_product=' . $id_product);
 
         $flagsId= Db::getInstance()->executeS($query_flag);
-
 
         /*Get Flags from Category */
         $id_cate=$params['product']['id_category_default'];
@@ -262,7 +255,6 @@ class Productextraflags extends Module
         );
 
         return $this->fetch('module:productextraflags/views/templates/front/product-flag.tpl');
-
     }
 
     public function hookdisplayHeaderCategory($params)
