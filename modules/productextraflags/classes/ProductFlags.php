@@ -12,6 +12,7 @@ class ProductFlags extends ObjectModel
     public $bg_color;
     public $time_from;
     public $time_to;
+    public $display_type;
 
 
     /**
@@ -20,9 +21,12 @@ class ProductFlags extends ObjectModel
     public static $definition = array(
         'table' => 'product_extra_flags',
         'primary' => 'id_flag',
-        'multilang' => false,
+        'multilang' => true,
+        'multilang_shop' => true,
         'fields' => array(
-            'name_flag' => array('type' => self::TYPE_STRING,  'validate' => 'isGenericName', 'required' => true),
+            /* Lang field */
+            'name_flag' => array('type' => self::TYPE_STRING, 'lang' => true, 'validate' => 'isGenericName', 'required' => true),
+
             'selectedthumbnailimage' => array('type' => self::TYPE_STRING),
             'type' => array('type' => self::TYPE_STRING),
             'img_status' => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
@@ -30,7 +34,8 @@ class ProductFlags extends ObjectModel
             'text_color' => array('type' => self::TYPE_STRING),
             'bg_color' => array('type' => self::TYPE_STRING),
             'time_from' => array('type' => self::TYPE_STRING),
-            'time_to' => array('type' => self::TYPE_STRING)
+            'time_to' => array('type' => self::TYPE_STRING),
+            'display_type' => array('type' => self::TYPE_STRING)
         ),
     );
 

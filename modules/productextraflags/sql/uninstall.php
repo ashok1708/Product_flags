@@ -26,9 +26,15 @@
 $sql = array();
 
 
-$sql[] = 'DROP TABLE IF EXISTS `'._DB_PREFIX_.'product_cover_thumbnails`';
+$sql[] = 'DROP TABLE IF EXISTS `'._DB_PREFIX_.'product_extra_flags`';
 
-$sql[] = 'DROP TABLE IF EXISTS `'._DB_PREFIX_.'product_thumbnails_item`';
+$sql[] = 'DROP TABLE IF EXISTS `'._DB_PREFIX_.'product_flags_item`';
+
+$sql[] = 'DROP TABLE IF EXISTS `'._DB_PREFIX_.'product_flags_category`';
+
+$sql[] = 'DROP TABLE IF EXISTS `'._DB_PREFIX_.'product_extra_flags_lang`';
+
+$sql[] = 'DROP TABLE IF EXISTS `'._DB_PREFIX_.'product_extra_flags_shop`';
 
 foreach ($sql as $query) {
     if (Db::getInstance()->execute($query) == false) {

@@ -28,19 +28,39 @@ $sql = array();
 
 $sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'product_extra_flags` (
  `id_flag` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name_flag` varchar(128) NOT NULL,
   `selectedthumbnailimage` varchar(128) NOT NULL,
   `type` varchar(128) NOT NULL,
   `img_status` int(11) NOT NULL,
   `position` varchar(128) NOT NULL,
   `text_color` varchar(128) NOT NULL,
-  `bg_color` varchar(128) NOT NULL
+  `bg_color` varchar(128) NOT NULL,
+  `time_from` varchar(128) NOT NULL,
+  `time_to` varchar(128) NOT NULL,
+  `display_type` varchar(128) NOT NULL
   
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8';
 
 $sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'product_flags_item` (
   `id_product` int(11) NOT NULL ,
   `id_flag` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8';
+
+$sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'product_flags_category` (
+  `id_flag` int(11) NOT NULL ,
+  `id_category` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8';
+
+$sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'product_extra_flags_lang` (
+  `id_flag` int(11) unsigned NOT NULL,
+  `id_lang` int(10) unsigned NOT NULL,
+  `id_shop` int(10) unsigned NOT NULL,
+  `name_flag` varchar(255) NOT NULL,    
+  PRIMARY KEY (`id_flag`,`id_lang`, `id_shop`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8';
+
+$sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'product_extra_flags_shop` (
+  `id_flag` int(11) NOT NULL ,
+  `id_shop` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8';
 
 foreach ($sql as $query) {

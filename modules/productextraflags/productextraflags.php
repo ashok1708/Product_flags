@@ -37,7 +37,10 @@ class Productextraflags extends Module
         $this->need_instance = 1;
         $this->bootstrap = true;
 
+
         parent::__construct();
+        $this->registerHook('displayProductListReviews');
+        $this->registerHook('displayHeaderCategory');
         $this->displayName = $this->l('Product Extra Flags');
         $this->description = $this->l('Add Extra Flags On Your Product.');
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall this module?');
@@ -60,14 +63,19 @@ class Productextraflags extends Module
     public function install()
     {
         include(dirname(__FILE__) . '/sql/install.php');
-
+        if (!file_exists(_PS_ROOT_DIR_ . '/img/thumbnail/')) {
+            mkdir(_PS_ROOT_DIR_ . '/img/thumbnail/');
+        }
         return parent::install()
             && $this->registerHook('header')
             && $this->registerHook('displayAdminProductsExtra')
             && $this->registerHook("displayAdminProductsMainStepLeftColumnBottom")
             && $this->registerHook('actionProductAdd')
+            && $this->registerHook('displayProductListReviews')
             && $this->registerHook('actionProductUpdate')
             && $this->registerHook('displayAfterProductThumbs')
+            && $this->registerHook('actionPresentProductListing')
+            && $this->registerHook('displayProductListBelowButton')
             && $this->installTab('AdminCatalog', 'AdminProductFlags', 'Product Flags');
     }
 
@@ -85,9 +93,14 @@ class Productextraflags extends Module
          Fetching data of all flags.
          */
         $query = new DbQuery();
-        $query->select('*')->from('product_extra_flags');
-        $flags_data= Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($query);
+        $query->select('pef.*, pefl.name_flag' )
+            ->from('product_extra_flags','pef')
+            ->leftJoin('product_extra_flags_lang','pefl','pef.id_flag = pefl.id_flag')
+            ->where('pef.display_type = 0')
+            ->where('id_lang = ' . $this->context->language->id)
+            ->where('id_shop = ' . $this->context->shop->id);
 
+        $flags_data= Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($query);
         $this->context->smarty->assign(
             [
                 'id_product'=> $id_product,
@@ -102,14 +115,17 @@ class Productextraflags extends Module
     public function hookActionProductUpdate($params)
     {
         $thmbn = Tools::getValue('flags_item');
-        dump($thmbn);
         Db::getInstance()->delete('product_flags_item','id_product='.$params['id_product']);
 
         $data=[];
         foreach ($thmbn as $item)
         {
             $query= new DbQuery();
-            $query->select('*')->from('product_extra_flags')->where("name_flag='".$item."'");
+            $query->select('*')->from('product_extra_flags_lang')
+                ->where("name_flag='".$item."'")
+                ->where('id_lang = ' . $this->context->language->id)
+                ->where('id_shop = ' . $this->context->shop->id);
+
             $flag_data=Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($query);
             
             $row = [
@@ -118,47 +134,68 @@ class Productextraflags extends Module
             ];
             $data[] = $row;
         }
-
         Db::getInstance()->insert('product_flags_item',$data);
-        exit();
+
     }
 
     public function getContent()
     {
+        Tools::redirectAdmin($this->context->link->getAdminLink('AdminProductFlags'));
         $this->context->controller->addJqueryUI('ui.datepicker');
     }
 
     public function hookDisplayAfterProductThumbs($params)
     {
         $id_product =Tools::getValue('id_product');
-        $categories_id= Product::getProductCategoriesFull($id_product);
-        foreach ($categories_id as $id)
-        {
-            $query_cate = new DbQuery();
-            $query_cate->select('id_flag')
-                ->from('product_flags_category')
-                ->where('id_category=' . $id['id_category']);
-            $flagsId = Db::getInstance()->executeS($query_cate);
-            dump($id['id_category']);
-        }
 
+        /*Get Flags from Product */
+        $query_flag = new DbQuery();
+        $query_flag->select('id_flag')
+                ->from('product_flags_item')
+                ->where('id_product=' . $id_product);
+
+        $flagsId= Db::getInstance()->executeS($query_flag);
+
+
+        /*Get Flags from Category */
+        $id_cate=$this->context->smarty->tpl_vars['category']->value->id_category;
+
+        $query_cate = new DbQuery();
+        $query_cate->select('id_flag')
+            ->from('product_flags_category')
+            ->where('id_category=' . $id_cate);
+        $flagsId+= Db::getInstance()->executeS($query_cate);
+
+
+
+        $ids=[];
         foreach ($flagsId as $id)
         {
-            $query = new DbQuery();
-            $query->select('*')
-                ->from('product_extra_flags')
-                ->leftJoin('product_flags_item','',_DB_PREFIX_.'product_extra_flags.id_flag='._DB_PREFIX_.'product_flags_item.id_flag')
-                ->where(_DB_PREFIX_.'product_flags_item.id_product='.$id_product.' AND '._DB_PREFIX_.'product_flags_item.id_flag='.$id['id_flag']);
+            $ids[]=$id['id_flag'];
+        }
+        $ids= array_unique($ids);
 
-           if($row= Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow($query))
-           {
-               $flags_data[] =$row;
-           }
+        $flags_data=[];
+
+        foreach ($ids as $id)
+        {
+            $query = new DbQuery();
+            $query->select('pef.*, pefl.name_flag')
+                ->from('product_extra_flags','pef')
+                ->leftJoin('product_extra_flags_lang','pefl','pef.id_flag = pefl.id_flag')
+                ->leftJoin('product_flags_category','pfc','pef.id_flag = pfc.id_flag')
+                ->where('pef.id_flag='.$id)
+                ->where('pfc.id_category='.$id_cate);
+
+
+            if($row= Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow($query))
+            {
+                $flags_data[] =$row;
+            }
         }
 
         $this->context->smarty->assign(
             [
-
                 'flags_data' => $flags_data
             ]
         );
@@ -166,10 +203,108 @@ class Productextraflags extends Module
         return $this->fetch('module:productextraflags/views/templates/front/product-flag.tpl');
     }
 
+
+    public function hookDisplayProductListReviews($params)
+    {
+
+
+        $id_product=$params['product']['id_product'];
+
+        /*Get Flags from Product */
+        $query_flag = new DbQuery();
+        $query_flag->select('id_flag')
+            ->from('product_flags_item')
+            ->where('id_product=' . $id_product);
+
+        $flagsId= Db::getInstance()->executeS($query_flag);
+
+
+        /*Get Flags from Category */
+        $id_cate=$params['product']['id_category_default'];
+
+        $query_cate = new DbQuery();
+        $query_cate->select('id_flag')
+            ->from('product_flags_category')
+            ->where('id_category=' . $id_cate);
+        $flagsId+= Db::getInstance()->executeS($query_cate);
+
+        $flags_data=[];
+        $ids=[];
+        foreach ($flagsId as $id)
+        {
+            $ids[]=$id['id_flag'];
+        }
+        $ids= array_unique($ids);
+
+        $flags_data=[];
+
+        foreach ($ids as $id)
+        {
+            $query = new DbQuery();
+            $query->select('pef.*, pefl.name_flag')
+                ->from('product_extra_flags','pef')
+                ->leftJoin('product_extra_flags_lang','pefl','pef.id_flag = pefl.id_flag')
+                ->leftJoin('product_flags_category','pfc','pef.id_flag = pfc.id_flag')
+                ->where('pef.id_flag='.$id)
+                ->where('pfc.id_category='.$id_cate);
+
+
+            if($row= Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow($query))
+            {
+                $flags_data[] =$row;
+            }
+        }
+
+        $this->context->smarty->assign(
+            [
+                'flags_data' => $flags_data
+            ]
+        );
+
+        return $this->fetch('module:productextraflags/views/templates/front/product-flag.tpl');
+
+    }
+
+    public function hookdisplayHeaderCategory($params)
+    {
+       $id_cate=$this->context->smarty->tpl_vars['category']->value['id'];
+
+        $query_cate = new DbQuery();
+        $query_cate->select('id_flag')
+            ->from('product_flags_category')
+            ->where('id_category=' . $id_cate);
+
+        $flagsId = Db::getInstance()->executeS($query_cate);
+
+        $flags_data=[];
+
+        foreach ($flagsId as $id)
+        {
+            $query = new DbQuery();
+            $query->select('pef.*, pefl.name_flag')
+                ->from('product_extra_flags','pef')
+                ->leftJoin('product_extra_flags_lang','pefl','pef.id_flag = pefl.id_flag')
+                ->where('pefl.id_lang = ' . $this->context->language->id)
+                ->where('pefl.id_shop = ' . $this->context->shop->id)
+                ->where('pef.id_flag='.$id['id_flag'])
+                ->where('pef.display_type=1');
+
+            if($row= Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow($query))
+            {
+                $flags_data[] =$row;
+            }
+
+        }
+        $this->context->smarty->assign(
+            [
+                'flags_data' => $flags_data
+            ]
+        );
+    }
+
     public function hookHeader()
     {
         $this->context->controller->addCSS(($this->_path) . 'views/css/front.css');
     }
-
 
 }
