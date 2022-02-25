@@ -24,6 +24,7 @@ class ProductFlags extends ObjectModel
         'multilang' => true,
         'multilang_shop' => true,
         'fields' => array(
+
             /* Lang field */
             'name_flag' => array('type' => self::TYPE_STRING, 'lang' => true, 'validate' => 'isGenericName', 'required' => true),
 

@@ -47,6 +47,19 @@ class AdminProductFlagsController extends ModuleAdminController
         $this->fieldImageSettings = array('name' => 'selectedthumbnailimage', 'dir' => 'thumbnail');
         $this->image_dir = 'thumbnail';
     }
+    public function initPageHeaderToolbar()
+    {
+        parent::initPageHeaderToolbar();
+
+        $this->context->smarty->clearAssign('help_link');
+        $this->page_header_toolbar_btn['help_link'] = array(
+            'href' => _MODULE_DIR_  .$this->module->name.  '/user_guide.pdf',
+            'desc' => $this->trans('Help', [], false),
+            'icon' => 'process-icon-help'
+
+        );
+    }
+
 
     public function renderList()
     {
