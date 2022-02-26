@@ -1,7 +1,5 @@
 <?php
 
-include(dirname(__FILE__) . '/../../classes/ProductFlags.php');
-
 class AdminProductFlagsController extends ModuleAdminController
 {
     protected $position_identifier = 'id_flag';
@@ -15,26 +13,23 @@ class AdminProductFlagsController extends ModuleAdminController
         $this->lang = true;
         $this->identifier = 'id_flag';
         $this->_defaultOrderBy = 'position';
-
         parent::__construct();
 
         if (!$this->module->active) {
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminHome'));
         }
-
         $this->_select = ' a.type ';
         $this->fields_list = array(
             'id_flag' => array(
-                'title' => $this->trans('ID'),
+                'title' => $this->trans('Flag Id'),
                 'align' => 'center',
                 'class' => 'fixed-width-xs',
             ),
             'name_flag' => array(
-                'title' => $this->trans('title'),
+                'title' => $this->trans('Flag Name'),
                 'filter_key' => 'b!title',
-                'align' => 'left',
+                'align' => 'center',
             ),
-
         );
         $this->bulk_actions = array(
             'delete' => array(
@@ -44,22 +39,21 @@ class AdminProductFlagsController extends ModuleAdminController
             ),
         );
 
-        $this->fieldImageSettings = array('name' => 'selectedthumbnailimage', 'dir' => 'thumbnail');
+
+        $this->fieldImageSettings = array('name' => 'texture', 'dir' => 'thumbnail');
+
         $this->image_dir = 'thumbnail';
     }
     public function initPageHeaderToolbar()
     {
         parent::initPageHeaderToolbar();
-
         $this->context->smarty->clearAssign('help_link');
         $this->page_header_toolbar_btn['help_link'] = array(
             'href' => _MODULE_DIR_  .$this->module->name.  '/user_guide.pdf',
             'desc' => $this->trans('Help', [], false),
             'icon' => 'process-icon-help'
-
         );
     }
-
 
     public function renderList()
     {
@@ -165,22 +159,18 @@ class AdminProductFlagsController extends ModuleAdminController
                     'label'=>$this->trans('From',[],'Admin.Global'),
                     'name'=>'time_from',
                 ),
-
                 array(
                     'type'=>'datetime',
                     'label'=>$this->trans('To',[],'Admin.Global'),
                     'name'=>'time_to',
                 ),
-
                 array(
                     'type' => 'group',
                     'label' => $this->l('Categories'),
                     'name' => 'groupBox',
                     'values' => $groups,
-                    'required' => true,
                     'col' => '6',
                 ),
-
                 array(
                     'type' => 'select',
                     'label' => $this->l('Flag Position'),
@@ -197,11 +187,13 @@ class AdminProductFlagsController extends ModuleAdminController
                     'type' => 'color',
                     'label' => $this->l(' Text Color'),
                     'name' => 'text_color',
+                    'desc'=>$this->l('Default Text Color : White')
                 ),
                 array(
                     'type' => 'color',
                     'label' => $this->l(' Flag Background Color'),
-                    'name' => 'bg_color'
+                    'name' => 'bg_color',
+                    'desc'=>$this->l('Default Background Color : Pacific Blue (#24B9D7)')
                 ),
             ),
             'submit' => array(
@@ -218,65 +210,16 @@ class AdminProductFlagsController extends ModuleAdminController
             ];
         }
 
-        $selected_cate_ids= $this->getSelectedCateId();
-
-        foreach ($groups as $cat)
+        if(Tools::getValue('id_flag'));
         {
-            $this->fields_value['groupBox_' . $cat['id_group']] =  Tools::getValue('groupBox_' . $cat['id_group'], in_array($cat['id_group'], $selected_cate_ids));
+            $selected_cate_ids= ProductFlags::getSelectedCateId(Tools::getValue('id_flag'));
+            foreach ($groups as $cat)
+            {
+                $this->fields_value['groupBox_' . $cat['id_group']] =  Tools::getValue('groupBox_' . $cat['id_group'], in_array($cat['id_group'], $selected_cate_ids));
+            }
         }
 
         return parent::renderForm();
-
-    }
-
-
-    public function postProcess()
-    {
-        $dataCate=[];
-        $dataShop=[];
-
-        if(isset($_POST['id_flag'])  )
-        {
-            $id_flag_current = $_POST['id_flag'];
-
-            if (Db::getInstance()->delete('product_flags_category', 'id_flag=' . $_POST['id_flag'])) {
-                $id_flag = $id_flag_current;
-            }
-        }
-        else
-        {
-            $id_flag = $this->getLastFlagId() + 1;
-        }
-        if(isset($_POST['groupBox']) || isset($_POST['checkBoxShopAsso_product_extra_flags']))
-        {
-            $catList=$_POST['groupBox'];
-            $shopList=$_POST['checkBoxShopAsso_product_extra_flags'];
-
-            foreach ($shopList as $shop)
-            {
-                $row = [
-                    'id_flag'=>$id_flag,
-                    'id_shop'=>$shop
-                ];
-                $dataShop[] = $row;
-            }
-
-            foreach ($catList as $category)
-            {
-                $row = [
-                    'id_flag'=>$id_flag,
-                    'id_category'=>$category
-                ];
-                $dataCate[] = $row;
-            }
-
-            Db::getInstance()->insert('product_flags_category',$dataCate);
-            Db::getInstance()->insert('product_extra_flags_shop',$dataShop);
-        }
-
-
-
-        return parent::postProcess();
     }
 
 
@@ -321,34 +264,5 @@ class AdminProductFlagsController extends ModuleAdminController
                 self::recurseCategory($actualCategories, $categories, $categories[$id_category][$key], $key, $id_selected);
             }
         }
-    }
-
-    public function getLastFlagId()
-    {
-        $query= new DbQuery();
-        $query->select('MAX(id_flag)')->from('product_extra_flags');
-        return Db::getInstance()->getValue($query);
-    }
-
-    public function getSelectedCateId()
-    {
-        $selected_id=[];
-        if(isset($_GET['id_flag']))
-        {
-            $id_flag=$_GET['id_flag'];
-            $query=new DbQuery();
-            $query->select('id_category')
-                ->from('product_flags_category')
-                ->where('id_flag='.$id_flag);
-            $data= Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($query);
-
-
-            foreach ($data as $id)
-            {
-                $selected_id[]=$id['id_category'];
-            }
-
-        }
-        return $selected_id;
     }
 }

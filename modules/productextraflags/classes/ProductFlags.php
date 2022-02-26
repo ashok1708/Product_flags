@@ -2,7 +2,6 @@
 
 class ProductFlags extends ObjectModel
 {
-
     public $name_flag;
     public $selectedthumbnailimage;
     public $type;
@@ -61,4 +60,74 @@ class ProductFlags extends ObjectModel
             'id_flag = '.$id_flag);
     }
 
+    public function getFlagsOfProduct($id_product)
+    {
+        $query_flag = new DbQuery();
+        $query_flag->select('id_flag')
+            ->from('product_flags_item')
+            ->where('id_product=' . $id_product);
+
+        return Db::getInstance()->executeS($query_flag);
+    }
+
+    public function getFlagsOfCategory($id_category)
+    {
+        $query_cate = new DbQuery();
+        $query_cate->select('id_flag')
+            ->from('product_flags_category')
+            ->where('id_category=' . $id_category);
+       return Db::getInstance()->executeS($query_cate);
+    }
+
+    public function getSelectedCateId($id_flag)
+    {
+        $selected_id=[];
+        if($id_flag)
+        {
+            $query=new DbQuery();
+            $query->select('id_category')
+                ->from('product_flags_category')
+                ->where('id_flag='.$id_flag);
+            $data= Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($query);
+
+
+            foreach ($data as $id)
+            {
+                $selected_id[]=$id['id_category'];
+            }
+        }
+        return $selected_id;
+    }
+
+    public function cateShopAddUpdateDb($id_flag,$cate_list,$shop_list)
+    {
+        $dataCate=[];
+        $dataShop=[];
+
+        if($cate_list)
+        {
+            foreach ($cate_list as $category)
+            {
+                $row = [
+                    'id_flag'=>$id_flag,
+                    'id_category'=>$category
+                ];
+                $dataCate[] = $row;
+            }
+        }
+
+        if($shop_list)
+        {
+            foreach ($shop_list as $shop)
+            {
+                $row = [
+                    'id_flag'=>$id_flag,
+                    'id_shop'=>$shop
+                ];
+                $dataShop[] = $row;
+            }
+        }
+        Db::getInstance()->insert('product_flags_category',$dataCate);
+        Db::getInstance()->insert('product_extra_flags_shop',$dataShop);
+    }
 }
